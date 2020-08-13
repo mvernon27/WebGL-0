@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=UTF-8 />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <title>Three.js Realistic Rain Tutorial by Red Stapler</title>
+  </head>
+  <body>
+      <nav><a id="nav-button">&#9776;</a></nav>
+      <page></page>
+    <script src="js/three.js"></script>
+    <script>
+
+    let drops = [], scene,camera, renderer, cloudParticles = [], flash, rain, rainGeo, rainCount = 305000;
+      var objects = [];
+
+    function init() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(60,window.innerWidth / window.innerHeight, 1, 1000);
+      camera.position.z = 1;
+      camera.rotation.x = 1.16;
+      camera.rotation.y = -0.12;
+      camera.rotation.z = 0.27;
+
+      directionalLight = new THREE.DirectionalLight(0xffffff);
+      directionalLight.position.set(0,0,1);
+      scene.add(directionalLight);
+
+      renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+
+      document.body.appendChild(renderer.domElement);
+      rainGeo = new THREE.Geometry();
+
+      var bgTexture = new THREE.TextureLoader().load("snow5.jpg");
+      bgTexture.minFilter = THREE.LinearFilter;
+      scene.background = bgTexture;
+
+      for(let i=0;i<rainCount;i++) {
+        rainDrop = new THREE.Vector3(
+          Math.random() * 1100 -400,
+          Math.random() * 700 - 200,
+          Math.random() * 1100 - 900
+        );
+        rainDrop.velocity = {};
+        rainDrop.velocity = 0;
+        rainGeo.vertices.push(rainDrop);
+        objects.push(rainDrop);
+      }
+      rainMaterial = new THREE.PointsMaterial({
+        color: 0xaaaaaa,
+        size: 0.20,
+        transparent: true
+      });
+
+      rain = new THREE.PointCloud(rainGeo,rainMaterial);
+      scene.add(rain);
+
+      let loader = new THREE.TextureLoader();
+      loader.load("kindpng_31967.png", function(texture){
+        cloudGeo = new THREE.PlaneBufferGeometry(1000,1000);
+        cloudMaterial = new THREE.MeshLambertMaterial({
+          map: texture,
+          transparent: true
+        });
+        for(let p=0; p<100; p++) {
+          let cloud = new THREE.Mesh(cloudGeo,cloudMaterial);
+          cloud.position.set(
+            Math.random()*1100 -400,
+            500,
+            Math.random()*1100 -900
+          );
+          cloud.rotation.x = 1.16;
+          cloud.rotation.y = -0.12;
+          cloud.rotation.z = Math.random()*360;
+          cloud.material.opacity = .015;
+
+
+          cloudParticles.push(cloud);
+          scene.add(cloud);
+        }
+      });
+      
+    }
+
+    function animate() {
+        cloudParticles.forEach(p => {
+        p.rotation.z -=0.002;
+      });
+      rainGeo.vertices.forEach(p => {
+        p.velocity -= 0.000000000000000001 + Math.random() * .02;
+        p.y += p.velocity;
+        if (p.y < -200) {
+          p.y = 200;
+          p.velocity = 0;
+        }
+      });
+
+      rainGeo.verticesNeedUpdate = true;
+      rain.rotation.y +=0.00//2;
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+
+    init();
+    animate();
+
+
+function render() {
+	renderer.render( scene, camera );
+}
+
+render();
+    </script>
+  </body>
+</html>
